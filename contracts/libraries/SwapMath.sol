@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: BUSL-1.1
-pragma solidity >=0.5.0;
+pragma solidity ^0.8.20;
 
-import './FullMath.sol';
-import './SqrtPriceMath.sol';
+import "./FullMath.sol";
+import "./SqrtPriceMath.sol";
 
 /// @title Computes the result of a swap within ticks
 /// @notice Contains methods for computing the result of a swap within a single tick price range, i.e., a single tick.
 library SwapMath {
     /// @notice Computes the result of swapping some amount in, or amount out, given the parameters of the swap
-    /// @dev The fee, plus the amount in, will never exceed the amount remaining if the swap's `amountSpecified` is positive
+    /// @dev The fee, plus the amount in, will never exceed the amount remaining if the swap"s `amountSpecified` is positive
     /// @param sqrtRatioCurrentX96 The current sqrt price of the pool
     /// @param sqrtRatioTargetX96 The price that cannot be exceeded, from which the direction of the swap is inferred
     /// @param liquidity The usable liquidity
@@ -89,7 +89,7 @@ library SwapMath {
         }
 
         if (exactIn && sqrtRatioNextX96 != sqrtRatioTargetX96) {
-            // we didn't reach the target, so take the remainder of the maximum input as fee
+            // we didn"t reach the target, so take the remainder of the maximum input as fee
             feeAmount = uint256(amountRemaining) - amountIn;
         } else {
             feeAmount = FullMath.mulDivRoundingUp(amountIn, feePips, 1e6 - feePips);

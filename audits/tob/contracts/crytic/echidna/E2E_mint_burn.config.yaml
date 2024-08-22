@@ -9,8 +9,8 @@ timeout: 600 # 10 minutes
 # blacklist
 filterFunctions:
   [
-    'E2E_mint_burn.viewInitRandomPoolParams(uint128)',
-    'E2E_mint_burn.viewMintRandomNewPosition(uint128,int24,uint24,int24)',
-    'E2E_mint_burn.viewBurnRandomPositionIdx(uint128,uint128)',
-    'E2E_mint_burn.viewBurnRandomPositionBurnAmount(uint128,uint128)',
+    "E2E_mint_burn.viewInitRandomPoolParams(uint128)",
+    "E2E_mint_burn.viewMintRandomNewPosition(uint128,int24,uint24,int24)",
+    "E2E_mint_burn.viewBurnRandomPositionIdx(uint128,uint128)",
+    "E2E_mint_burn.viewBurnRandomPositionBurnAmount(uint128,uint128)",
   ]

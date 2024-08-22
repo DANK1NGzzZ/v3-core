@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: BUSL-1.1
-pragma solidity >=0.5.0 <0.8.0;
+pragma solidity ^0.8.20;
 
-import './LowGasSafeMath.sol';
-import './SafeCast.sol';
+import "./LowGasSafeMath.sol";
+import "./SafeCast.sol";
 
-import './TickMath.sol';
-import './LiquidityMath.sol';
+import "./TickMath.sol";
+import "./LiquidityMath.sol";
 
 /// @title Tick
 /// @notice Contains functions for managing tick processes and relevant calculations
@@ -55,8 +55,8 @@ library Tick {
     /// @param tickCurrent The current tick
     /// @param feeGrowthGlobal0X128 The all-time global fee growth, per unit of liquidity, in token0
     /// @param feeGrowthGlobal1X128 The all-time global fee growth, per unit of liquidity, in token1
-    /// @return feeGrowthInside0X128 The all-time fee growth in token0, per unit of liquidity, inside the position's tick boundaries
-    /// @return feeGrowthInside1X128 The all-time fee growth in token1, per unit of liquidity, inside the position's tick boundaries
+    /// @return feeGrowthInside0X128 The all-time fee growth in token0, per unit of liquidity, inside the position"s tick boundaries
+    /// @return feeGrowthInside1X128 The all-time fee growth in token1, per unit of liquidity, inside the position"s tick boundaries
     function getFeeGrowthInside(
         mapping(int24 => Tick.Info) storage self,
         int24 tickLower,
@@ -104,7 +104,7 @@ library Tick {
     /// @param secondsPerLiquidityCumulativeX128 The all-time seconds per max(1, liquidity) of the pool
     /// @param tickCumulative The tick * time elapsed since the pool was first initialized
     /// @param time The current block timestamp cast to a uint32
-    /// @param upper true for updating a position's upper tick, or false for updating a position's lower tick
+    /// @param upper true for updating a position"s upper tick, or false for updating a position"s lower tick
     /// @param maxLiquidity The maximum liquidity allocation for a single tick
     /// @return flipped Whether the tick was flipped from initialized to uninitialized, or vice versa
     function update(
@@ -125,7 +125,7 @@ library Tick {
         uint128 liquidityGrossBefore = info.liquidityGross;
         uint128 liquidityGrossAfter = LiquidityMath.addDelta(liquidityGrossBefore, liquidityDelta);
 
-        require(liquidityGrossAfter <= maxLiquidity, 'LO');
+        require(liquidityGrossAfter <= maxLiquidity, "LO");
 
         flipped = (liquidityGrossAfter == 0) != (liquidityGrossBefore == 0);
 

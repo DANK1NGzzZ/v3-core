@@ -1,9 +1,9 @@
 pragma solidity =0.7.6;
 pragma abicoder v2;
 
-import '../../../../../contracts/test/TestERC20.sol';
-import '../../../../../contracts/UniswapV3Pool.sol';
-import '../../../../../contracts/UniswapV3Factory.sol';
+import "../../../../../contracts/test/TestERC20.sol";
+import "../../../../../contracts/UniswapV3Pool.sol";
+import "../../../../../contracts/UniswapV3Factory.sol";
 
 contract SetupToken {
     TestERC20 public token;
@@ -30,7 +30,7 @@ contract SetupTokens {
         tokenSetup0 = new SetupToken();
         tokenSetup1 = new SetupToken();
 
-        // switch them around so that token0's address is lower than token1's
+        // switch them around so that token0"s address is lower than token1"s
         // since this is what the uniswap factory will do when you create the pool
         if (address(tokenSetup0.token()) > address(tokenSetup1.token())) {
             (tokenSetup0, tokenSetup1) = (tokenSetup1, tokenSetup0);
@@ -47,7 +47,7 @@ contract SetupTokens {
         address _recipient,
         uint256 _amount
     ) public {
-        require(_tokenIdx == 0 || _tokenIdx == 1, 'invalid token idx');
+        require(_tokenIdx == 0 || _tokenIdx == 1, "invalid token idx");
         if (_tokenIdx == 0) tokenSetup0.mintTo(_recipient, _amount);
         if (_tokenIdx == 1) tokenSetup1.mintTo(_recipient, _amount);
     }

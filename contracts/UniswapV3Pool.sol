@@ -1,31 +1,31 @@
 // SPDX-License-Identifier: BUSL-1.1
-pragma solidity =0.7.6;
+pragma solidity ^0.8.20;
 
-import './interfaces/IUniswapV3Pool.sol';
+import "./interfaces/IUniswapV3Pool.sol";
 
-import './NoDelegateCall.sol';
+import "./NoDelegateCall.sol";
 
-import './libraries/LowGasSafeMath.sol';
-import './libraries/SafeCast.sol';
-import './libraries/Tick.sol';
-import './libraries/TickBitmap.sol';
-import './libraries/Position.sol';
-import './libraries/Oracle.sol';
+import "./libraries/LowGasSafeMath.sol";
+import "./libraries/SafeCast.sol";
+import "./libraries/Tick.sol";
+import "./libraries/TickBitmap.sol";
+import "./libraries/Position.sol";
+import "./libraries/Oracle.sol";
 
-import './libraries/FullMath.sol';
-import './libraries/FixedPoint128.sol';
-import './libraries/TransferHelper.sol';
-import './libraries/TickMath.sol';
-import './libraries/LiquidityMath.sol';
-import './libraries/SqrtPriceMath.sol';
-import './libraries/SwapMath.sol';
+import "./libraries/FullMath.sol";
+import "./libraries/FixedPoint128.sol";
+import "./libraries/TransferHelper.sol";
+import "./libraries/TickMath.sol";
+import "./libraries/LiquidityMath.sol";
+import "./libraries/SqrtPriceMath.sol";
+import "./libraries/SwapMath.sol";
 
-import './interfaces/IUniswapV3PoolDeployer.sol';
-import './interfaces/IUniswapV3Factory.sol';
-import './interfaces/IERC20Minimal.sol';
-import './interfaces/callback/IUniswapV3MintCallback.sol';
-import './interfaces/callback/IUniswapV3SwapCallback.sol';
-import './interfaces/callback/IUniswapV3FlashCallback.sol';
+import "./interfaces/IUniswapV3PoolDeployer.sol";
+import "./interfaces/IUniswapV3Factory.sol";
+import "./interfaces/IERC20Minimal.sol";
+import "./interfaces/callback/IUniswapV3MintCallback.sol";
+import "./interfaces/callback/IUniswapV3SwapCallback.sol";
+import "./interfaces/callback/IUniswapV3FlashCallback.sol";
 
 contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
     using LowGasSafeMath for uint256;
@@ -38,71 +38,92 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
     using Position for Position.Info;
     using Oracle for Oracle.Observation[65535];
 
-    /// @inheritdoc IUniswapV3PoolImmutables
+    /// @inheritdoc IUniswapV3PoolImmutables 
+    /**
+    factory: 这是一个 address 类型的不可变变量（immutable），它存储了 Uniswap V3 池的工厂合约地址。
+    使用 @inheritdoc 注释表示该变量继承自 IUniswapV3PoolImmutables 接口的定义，并且 override 关键字指示这个变量重写了接口中的同名成员。
+     */
     address public immutable override factory;
+    /**
+    token0: 这是一个 address 类型的不可变变量，存储了池中第一个代币的地址。它同样继承自 IUniswapV3PoolImmutables 接口并重写了接口中的定义。
+     */
     /// @inheritdoc IUniswapV3PoolImmutables
     address public immutable override token0;
+    /**
+    token1: 这是一个 address 类型的不可变变量，存储了池中第二个代币的地址。该变量继承自 IUniswapV3PoolImmutables 接口，并重写了接口中的定义。
+     */
     /// @inheritdoc IUniswapV3PoolImmutables
     address public immutable override token1;
+    /**
+    fee: 这是一个 uint24 类型的不可变变量，表示该池的交易手续费（以基点为单位），例如 3000 代表 0.3% 的手续费。它继承自 IUniswapV3PoolImmutables 接口，并重写了接口中的定义。
+     */
     /// @inheritdoc IUniswapV3PoolImmutables
     uint24 public immutable override fee;
-
+    /**
+    tickSpacing: 这是一个 int24 类型的不可变变量，表示价格区间的间隔（以 tick 为单位）。
+    在 Uniswap V3 中，价格的变化是以 tick 为单位进行的，tickSpacing 定义了每个价格 tick 的间距。
+    这个变量也继承自 IUniswapV3PoolImmutables 接口，并重写了接口中的定义。
+     */
     /// @inheritdoc IUniswapV3PoolImmutables
     int24 public immutable override tickSpacing;
-
+    /**
+    maxLiquidityPerTick: 这是一个 uint128 类型的不可变变量，表示每个 tick 可以容纳的最大流动性。
+    它定义了在池中每个价格区间（tick）允许的最大流动性量。
+    这个变量也继承自 IUniswapV3PoolImmutables 接口，并重写了接口中的定义。
+     */
     /// @inheritdoc IUniswapV3PoolImmutables
     uint128 public immutable override maxLiquidityPerTick;
 
     struct Slot0 {
-        // the current price
+        // the current price  池的当前价格，以 2^96 的平方根表示。这种表示法帮助在计算价格时提高精度。
         uint160 sqrtPriceX96;
-        // the current tick
+        // the current tick 当前的 tick 值，表示价格区间的状态。
         int24 tick;
-        // the most-recently updated index of the observations array
+        // the most-recently updated index of the observations array  观察数组中最新更新的索引。
         uint16 observationIndex;
-        // the current maximum number of observations that are being stored
+        // the current maximum number of observations that are being stored 当前存储的最大观察数量。
         uint16 observationCardinality;
-        // the next maximum number of observations to store, triggered in observations.write
+        // the next maximum number of observations to store, triggered in observations.write 下一个最大观察数量，用于触发观察写入。
         uint16 observationCardinalityNext;
         // the current protocol fee as a percentage of the swap fee taken on withdrawal
-        // represented as an integer denominator (1/x)%
+        // represented as an integer denominator (1/x)% 当前的协议费用，表示为交换费用的百分比的倒数（1/x）。
         uint8 feeProtocol;
-        // whether the pool is locked
+        // whether the pool is locked  池是否被锁定的标志。如果 true，池是解锁的，允许交易；如果 false，池是锁定的，不允许交易。
         bool unlocked;
     }
-    /// @inheritdoc IUniswapV3PoolState
+    /// @inheritdoc IUniswapV3PoolState  当前池的状态信息，使用 Slot0 结构体来表示。它继承了 IUniswapV3PoolState 接口的定义，并重写了其中的 slot0 成员。
     Slot0 public override slot0;
 
-    /// @inheritdoc IUniswapV3PoolState
+    /// @inheritdoc IUniswapV3PoolState  全球范围内的 token0 的费用增长值，以 2^128 表示
     uint256 public override feeGrowthGlobal0X128;
-    /// @inheritdoc IUniswapV3PoolState
+    /// @inheritdoc IUniswapV3PoolState  全球范围内的 token0 的费用增长值，以 2^128 表示
     uint256 public override feeGrowthGlobal1X128;
 
-    // accumulated protocol fees in token0/token1 units
+    // accumulated protocol fees in token0/token1 units  用于记录协议费用的结构体
     struct ProtocolFees {
         uint128 token0;
         uint128 token1;
     }
-    /// @inheritdoc IUniswapV3PoolState
+    /// @inheritdoc IUniswapV3PoolState  当前累积的协议费用，使用 ProtocolFees 结构体来表示。
     ProtocolFees public override protocolFees;
 
-    /// @inheritdoc IUniswapV3PoolState
-    uint128 public override liquidity;
+    /// @inheritdoc IUniswapV3PoolState  当前池中的流动性总量。
+    uint128 public override liquidity; 
 
-    /// @inheritdoc IUniswapV3PoolState
+    /// @inheritdoc IUniswapV3PoolState  一个映射，用于存储每个 tick 的信息，使用 Tick.Info 结构体来表示。
     mapping(int24 => Tick.Info) public override ticks;
-    /// @inheritdoc IUniswapV3PoolState
+    /// @inheritdoc IUniswapV3PoolState  一个映射，用于存储 tick 的位图，以便快速查找。
     mapping(int16 => uint256) public override tickBitmap;
-    /// @inheritdoc IUniswapV3PoolState
+    /// @inheritdoc IUniswapV3PoolState  一个映射，用于存储每个位置的信息，使用 Position.Info 结构体来表示。
     mapping(bytes32 => Position.Info) public override positions;
-    /// @inheritdoc IUniswapV3PoolState
+    /// @inheritdoc IUniswapV3PoolState  存储观察值的数组，最大长度为 65535。
     Oracle.Observation[65535] public override observations;
 
     /// @dev Mutually exclusive reentrancy protection into the pool to/from a method. This method also prevents entrance
     /// to a function before the pool is initialized. The reentrancy guard is required throughout the contract because
     /// we use balance checks to determine the payment status of interactions such as mint, swap and flash.
     modifier lock() {
-        require(slot0.unlocked, 'LOK');
+        require(slot0.unlocked, "LOK");
         slot0.unlocked = false;
         _;
         slot0.unlocked = true;
@@ -124,9 +145,9 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
 
     /// @dev Common checks for valid tick inputs.
     function checkTicks(int24 tickLower, int24 tickUpper) private pure {
-        require(tickLower < tickUpper, 'TLU');
-        require(tickLower >= TickMath.MIN_TICK, 'TLM');
-        require(tickUpper <= TickMath.MAX_TICK, 'TUM');
+        require(tickLower < tickUpper, "TLU");
+        require(tickLower >= TickMath.MIN_TICK, "TLM");
+        require(tickUpper <= TickMath.MAX_TICK, "TUM");
     }
 
     /// @dev Returns the block timestamp truncated to 32 bits, i.e. mod 2**32. This method is overridden in tests.
@@ -134,7 +155,7 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
         return uint32(block.timestamp); // truncation is desired
     }
 
-    /// @dev Get the pool's balance of token0
+    /// @dev Get the pool"s balance of token0
     /// @dev This function is gas optimized to avoid a redundant extcodesize check in addition to the returndatasize
     /// check
     function balance0() private view returns (uint256) {
@@ -144,7 +165,7 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
         return abi.decode(data, (uint256));
     }
 
-    /// @dev Get the pool's balance of token1
+    /// @dev Get the pool"s balance of token1
     /// @dev This function is gas optimized to avoid a redundant extcodesize check in addition to the returndatasize
     /// check
     function balance1() private view returns (uint256) {
@@ -269,7 +290,7 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
     /// @inheritdoc IUniswapV3PoolActions
     /// @dev not locked because it initializes unlocked
     function initialize(uint160 sqrtPriceX96) external override {
-        require(slot0.sqrtPriceX96 == 0, 'AI');
+        require(slot0.sqrtPriceX96 == 0, "AI");
 
         int24 tick = TickMath.getTickAtSqrtRatio(sqrtPriceX96);
 
@@ -299,7 +320,7 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
     }
 
     /// @dev Effect some changes to a position
-    /// @param params the position details and the change to the position's liquidity to effect
+    /// @param params the position details and the change to the position"s liquidity to effect
     /// @return position a storage pointer referencing the position with the given owner and tick range
     /// @return amount0 the amount of token0 owed to the pool, negative if the pool should pay the recipient
     /// @return amount1 the amount of token1 owed to the pool, negative if the pool should pay the recipient
@@ -327,7 +348,7 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
         if (params.liquidityDelta != 0) {
             if (_slot0.tick < params.tickLower) {
                 // current tick is below the passed range; liquidity can only become in range by crossing from left to
-                // right, when we'll need _more_ token0 (it's becoming more valuable) so user must provide it
+                // right, when we"ll need _more_ token0 (it"s becoming more valuable) so user must provide it
                 amount0 = SqrtPriceMath.getAmount0Delta(
                     TickMath.getSqrtRatioAtTick(params.tickLower),
                     TickMath.getSqrtRatioAtTick(params.tickUpper),
@@ -361,7 +382,7 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
                 liquidity = LiquidityMath.addDelta(liquidityBefore, params.liquidityDelta);
             } else {
                 // current tick is above the passed range; liquidity can only become in range by crossing from right to
-                // left, when we'll need _more_ token1 (it's becoming more valuable) so user must provide it
+                // left, when we"ll need _more_ token1 (it"s becoming more valuable) so user must provide it
                 amount1 = SqrtPriceMath.getAmount1Delta(
                     TickMath.getSqrtRatioAtTick(params.tickLower),
                     TickMath.getSqrtRatioAtTick(params.tickUpper),
@@ -373,8 +394,8 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
 
     /// @dev Gets and updates a position with the given liquidity delta
     /// @param owner the owner of the position
-    /// @param tickLower the lower tick of the position's tick range
-    /// @param tickUpper the upper tick of the position's tick range
+    /// @param tickLower the lower tick of the position"s tick range
+    /// @param tickUpper the upper tick of the position"s tick range
     /// @param tick the current tick, passed to avoid sloads
     function _updatePosition(
         address owner,
@@ -480,8 +501,8 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
         if (amount0 > 0) balance0Before = balance0();
         if (amount1 > 0) balance1Before = balance1();
         IUniswapV3MintCallback(msg.sender).uniswapV3MintCallback(amount0, amount1, data);
-        if (amount0 > 0) require(balance0Before.add(amount0) <= balance0(), 'M0');
-        if (amount1 > 0) require(balance1Before.add(amount1) <= balance1(), 'M1');
+        if (amount0 > 0) require(balance0Before.add(amount0) <= balance0(), "M0");
+        if (amount1 > 0) require(balance1Before.add(amount1) <= balance1(), "M1");
 
         emit Mint(msg.sender, recipient, tickLower, tickUpper, amount, amount0, amount1);
     }
@@ -494,7 +515,7 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
         uint128 amount0Requested,
         uint128 amount1Requested
     ) external override lock returns (uint128 amount0, uint128 amount1) {
-        // we don't need to checkTicks here, because invalid positions will never have non-zero tokensOwed{0,1}
+        // we don"t need to checkTicks here, because invalid positions will never have non-zero tokensOwed{0,1}
         Position.Info storage position = positions.get(msg.sender, tickLower, tickUpper);
 
         amount0 = amount0Requested > position.tokensOwed0 ? position.tokensOwed0 : amount0Requested;
@@ -553,7 +574,7 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
         int56 tickCumulative;
         // the current value of seconds per liquidity accumulator, computed only if we cross an initialized tick
         uint160 secondsPerLiquidityCumulativeX128;
-        // whether we've computed and cached the above two accumulators
+        // whether we"ve computed and cached the above two accumulators
         bool computedLatestObservation;
     }
 
@@ -600,16 +621,16 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
         uint160 sqrtPriceLimitX96,
         bytes calldata data
     ) external override noDelegateCall returns (int256 amount0, int256 amount1) {
-        require(amountSpecified != 0, 'AS');
+        require(amountSpecified != 0, "AS");
 
         Slot0 memory slot0Start = slot0;
 
-        require(slot0Start.unlocked, 'LOK');
+        require(slot0Start.unlocked, "LOK");
         require(
             zeroForOne
                 ? sqrtPriceLimitX96 < slot0Start.sqrtPriceX96 && sqrtPriceLimitX96 > TickMath.MIN_SQRT_RATIO
                 : sqrtPriceLimitX96 > slot0Start.sqrtPriceX96 && sqrtPriceLimitX96 < TickMath.MAX_SQRT_RATIO,
-            'SPL'
+            "SPL"
         );
 
         slot0.unlocked = false;
@@ -637,7 +658,7 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
                 liquidity: cache.liquidityStart
             });
 
-        // continue swapping as long as we haven't used the entire input/output and haven't reached the price limit
+        // continue swapping as long as we haven"t used the entire input/output and haven"t reached the price limit
         while (state.amountSpecifiedRemaining != 0 && state.sqrtPriceX96 != sqrtPriceLimitX96) {
             StepComputations memory step;
 
@@ -715,7 +736,7 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
                             cache.tickCumulative,
                             cache.blockTimestamp
                         );
-                    // if we're moving leftward, we interpret liquidityNet as the opposite sign
+                    // if we"re moving leftward, we interpret liquidityNet as the opposite sign
                     // safe because liquidityNet cannot be type(int128).min
                     if (zeroForOne) liquidityNet = -liquidityNet;
 
@@ -724,7 +745,7 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
 
                 state.tick = zeroForOne ? step.tickNext - 1 : step.tickNext;
             } else if (state.sqrtPriceX96 != step.sqrtPriceStartX96) {
-                // recompute unless we're on a lower tick boundary (i.e. already transitioned ticks), and haven't moved
+                // recompute unless we"re on a lower tick boundary (i.e. already transitioned ticks), and haven"t moved
                 state.tick = TickMath.getTickAtSqrtRatio(state.sqrtPriceX96);
             }
         }
@@ -774,13 +795,13 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
 
             uint256 balance0Before = balance0();
             IUniswapV3SwapCallback(msg.sender).uniswapV3SwapCallback(amount0, amount1, data);
-            require(balance0Before.add(uint256(amount0)) <= balance0(), 'IIA');
+            require(balance0Before.add(uint256(amount0)) <= balance0(), "IIA");
         } else {
             if (amount0 < 0) TransferHelper.safeTransfer(token0, recipient, uint256(-amount0));
 
             uint256 balance1Before = balance1();
             IUniswapV3SwapCallback(msg.sender).uniswapV3SwapCallback(amount0, amount1, data);
-            require(balance1Before.add(uint256(amount1)) <= balance1(), 'IIA');
+            require(balance1Before.add(uint256(amount1)) <= balance1(), "IIA");
         }
 
         emit Swap(msg.sender, recipient, amount0, amount1, state.sqrtPriceX96, state.liquidity, state.tick);
@@ -795,7 +816,7 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
         bytes calldata data
     ) external override lock noDelegateCall {
         uint128 _liquidity = liquidity;
-        require(_liquidity > 0, 'L');
+        require(_liquidity > 0, "L");
 
         uint256 fee0 = FullMath.mulDivRoundingUp(amount0, fee, 1e6);
         uint256 fee1 = FullMath.mulDivRoundingUp(amount1, fee, 1e6);
@@ -810,8 +831,8 @@ contract UniswapV3Pool is IUniswapV3Pool, NoDelegateCall {
         uint256 balance0After = balance0();
         uint256 balance1After = balance1();
 
-        require(balance0Before.add(fee0) <= balance0After, 'F0');
-        require(balance1Before.add(fee1) <= balance1After, 'F1');
+        require(balance0Before.add(fee0) <= balance0After, "F0");
+        require(balance1Before.add(fee1) <= balance1After, "F1");
 
         // sub is safe because we know balanceAfter is gt balanceBefore by at least fee
         uint256 paid0 = balance0After - balance0Before;

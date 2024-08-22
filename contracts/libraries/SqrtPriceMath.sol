@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: BUSL-1.1
-pragma solidity >=0.5.0;
+pragma solidity ^0.8.20;
 
-import './LowGasSafeMath.sol';
-import './SafeCast.sol';
 
-import './FullMath.sol';
-import './UnsafeMath.sol';
-import './FixedPoint96.sol';
+import "./LowGasSafeMath.sol";
+import "./SafeCast.sol";
+
+import "./FullMath.sol";
+import "./UnsafeMath.sol";
+import "./FixedPoint96.sol";
 
 /// @title Functions based on Q64.96 sqrt price and liquidity
 /// @notice Contains the math that uses square root of price as a Q64.96 and liquidity to compute deltas
@@ -71,7 +72,7 @@ library SqrtPriceMath {
         uint256 amount,
         bool add
     ) internal pure returns (uint160) {
-        // if we're adding (subtracting), rounding down requires rounding the quotient down (up)
+        // if we"re adding (subtracting), rounding down requires rounding the quotient down (up)
         // in both cases, avoid a mulDiv for most inputs
         if (add) {
             uint256 quotient =
@@ -112,7 +113,7 @@ library SqrtPriceMath {
         require(sqrtPX96 > 0);
         require(liquidity > 0);
 
-        // round to make sure that we don't pass the target price
+        // round to make sure that we don"t pass the target price
         return
             zeroForOne
                 ? getNextSqrtPriceFromAmount0RoundingUp(sqrtPX96, liquidity, amountIn, true)

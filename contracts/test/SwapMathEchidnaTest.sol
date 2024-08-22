@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity =0.7.6;
 
-import '../libraries/SwapMath.sol';
+import "../libraries/SwapMath.sol";
 
 contract SwapMathEchidnaTest {
     function checkComputeSwapStepInvariants(
@@ -34,7 +34,7 @@ contract SwapMathEchidnaTest {
             assert(sqrtQ == sqrtPriceTargetRaw);
         }
 
-        // didn't reach price target, entire amount must be consumed
+        // didn"t reach price target, entire amount must be consumed
         if (sqrtQ != sqrtPriceTargetRaw) {
             if (amountRemaining < 0) assert(amountOut == uint256(-amountRemaining));
             else assert(amountIn + feeAmount == uint256(amountRemaining));

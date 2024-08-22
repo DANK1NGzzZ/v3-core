@@ -1,5 +1,5 @@
 #format can be "text" or "json" for different output (human or machine readable)
-format: 'text'
+format: "text"
 #checkAsserts checks assertions
 checkAsserts: true
 #coverage controls coverage guided testing
@@ -53,7 +53,7 @@ coverage: false
 # timeout: null
 # #seed not defined by default, is the random seed
 # #seed: 0
-# #dictFreq controls how often to use echidna's internal dictionary vs random
+# #dictFreq controls how often to use echidna"s internal dictionary vs random
 # #values
 # dictFreq: 0.40
 # maxTimeDelay: 604800

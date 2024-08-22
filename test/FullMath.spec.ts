@@ -1,7 +1,7 @@
-import { ethers } from 'hardhat'
-import { FullMathTest } from '../typechain/FullMathTest'
-import { expect } from './shared/expect'
-import { Decimal } from 'decimal.js'
+import { ethers } from "hardhat"
+import { FullMathTest } from "../typechain/FullMathTest"
+import { expect } from "./shared/expect"
+import { Decimal } from "decimal.js"
 
 const {
   BigNumber,
@@ -11,35 +11,35 @@ const Q128 = BigNumber.from(2).pow(128)
 
 Decimal.config({ toExpNeg: -500, toExpPos: 500 })
 
-describe('FullMath', () => {
+describe("FullMath", () => {
   let fullMath: FullMathTest
-  before('deploy FullMathTest', async () => {
-    const factory = await ethers.getContractFactory('FullMathTest')
+  before("deploy FullMathTest", async () => {
+    const factory = await ethers.getContractFactory("FullMathTest")
     fullMath = (await factory.deploy()) as FullMathTest
   })
 
-  describe('#mulDiv', () => {
-    it('reverts if denominator is 0', async () => {
+  describe("#mulDiv", () => {
+    it("reverts if denominator is 0", async () => {
       await expect(fullMath.mulDiv(Q128, 5, 0)).to.be.reverted
     })
-    it('reverts if denominator is 0 and numerator overflows', async () => {
+    it("reverts if denominator is 0 and numerator overflows", async () => {
       await expect(fullMath.mulDiv(Q128, Q128, 0)).to.be.reverted
     })
-    it('reverts if output overflows uint256', async () => {
+    it("reverts if output overflows uint256", async () => {
       await expect(fullMath.mulDiv(Q128, Q128, 1)).to.be.reverted
     })
-    it('reverts if output overflows uint256', async () => {
+    it("reverts if output overflows uint256", async () => {
       await expect(fullMath.mulDiv(Q128, Q128, 1)).to.be.reverted
     })
-    it('reverts on overflow with all max inputs', async () => {
+    it("reverts on overflow with all max inputs", async () => {
       await expect(fullMath.mulDiv(MaxUint256, MaxUint256, MaxUint256.sub(1))).to.be.reverted
     })
 
-    it('all max inputs', async () => {
+    it("all max inputs", async () => {
       expect(await fullMath.mulDiv(MaxUint256, MaxUint256, MaxUint256)).to.eq(MaxUint256)
     })
 
-    it('accurate without phantom overflow', async () => {
+    it("accurate without phantom overflow", async () => {
       const result = Q128.div(3)
       expect(
         await fullMath.mulDiv(
@@ -50,56 +50,56 @@ describe('FullMath', () => {
       ).to.eq(result)
     })
 
-    it('accurate with phantom overflow', async () => {
+    it("accurate with phantom overflow", async () => {
       const result = BigNumber.from(4375).mul(Q128).div(1000)
       expect(await fullMath.mulDiv(Q128, BigNumber.from(35).mul(Q128), BigNumber.from(8).mul(Q128))).to.eq(result)
     })
 
-    it('accurate with phantom overflow and repeating decimal', async () => {
+    it("accurate with phantom overflow and repeating decimal", async () => {
       const result = BigNumber.from(1).mul(Q128).div(3)
       expect(await fullMath.mulDiv(Q128, BigNumber.from(1000).mul(Q128), BigNumber.from(3000).mul(Q128))).to.eq(result)
     })
   })
 
-  describe('#mulDivRoundingUp', () => {
-    it('reverts if denominator is 0', async () => {
+  describe("#mulDivRoundingUp", () => {
+    it("reverts if denominator is 0", async () => {
       await expect(fullMath.mulDivRoundingUp(Q128, 5, 0)).to.be.reverted
     })
-    it('reverts if denominator is 0 and numerator overflows', async () => {
+    it("reverts if denominator is 0 and numerator overflows", async () => {
       await expect(fullMath.mulDivRoundingUp(Q128, Q128, 0)).to.be.reverted
     })
-    it('reverts if output overflows uint256', async () => {
+    it("reverts if output overflows uint256", async () => {
       await expect(fullMath.mulDivRoundingUp(Q128, Q128, 1)).to.be.reverted
     })
-    it('reverts on overflow with all max inputs', async () => {
+    it("reverts on overflow with all max inputs", async () => {
       await expect(fullMath.mulDivRoundingUp(MaxUint256, MaxUint256, MaxUint256.sub(1))).to.be.reverted
     })
 
-    it('reverts if mulDiv overflows 256 bits after rounding up', async () => {
+    it("reverts if mulDiv overflows 256 bits after rounding up", async () => {
       await expect(
         fullMath.mulDivRoundingUp(
-          '535006138814359',
-          '432862656469423142931042426214547535783388063929571229938474969',
-          '2'
+          "535006138814359",
+          "432862656469423142931042426214547535783388063929571229938474969",
+          "2"
         )
       ).to.be.reverted
     })
 
-    it('reverts if mulDiv overflows 256 bits after rounding up case 2', async () => {
+    it("reverts if mulDiv overflows 256 bits after rounding up case 2", async () => {
       await expect(
         fullMath.mulDivRoundingUp(
-          '115792089237316195423570985008687907853269984659341747863450311749907997002549',
-          '115792089237316195423570985008687907853269984659341747863450311749907997002550',
-          '115792089237316195423570985008687907853269984653042931687443039491902864365164'
+          "115792089237316195423570985008687907853269984659341747863450311749907997002549",
+          "115792089237316195423570985008687907853269984659341747863450311749907997002550",
+          "115792089237316195423570985008687907853269984653042931687443039491902864365164"
         )
       ).to.be.reverted
     })
 
-    it('all max inputs', async () => {
+    it("all max inputs", async () => {
       expect(await fullMath.mulDivRoundingUp(MaxUint256, MaxUint256, MaxUint256)).to.eq(MaxUint256)
     })
 
-    it('accurate without phantom overflow', async () => {
+    it("accurate without phantom overflow", async () => {
       const result = Q128.div(3).add(1)
       expect(
         await fullMath.mulDivRoundingUp(
@@ -110,14 +110,14 @@ describe('FullMath', () => {
       ).to.eq(result)
     })
 
-    it('accurate with phantom overflow', async () => {
+    it("accurate with phantom overflow", async () => {
       const result = BigNumber.from(4375).mul(Q128).div(1000)
       expect(await fullMath.mulDivRoundingUp(Q128, BigNumber.from(35).mul(Q128), BigNumber.from(8).mul(Q128))).to.eq(
         result
       )
     })
 
-    it('accurate with phantom overflow and repeating decimal', async () => {
+    it("accurate with phantom overflow and repeating decimal", async () => {
       const result = BigNumber.from(1).mul(Q128).div(3).add(1)
       expect(
         await fullMath.mulDivRoundingUp(Q128, BigNumber.from(1000).mul(Q128), BigNumber.from(3000).mul(Q128))
@@ -130,7 +130,7 @@ describe('FullMath', () => {
   }
 
   // tiny fuzzer. unskip to run
-  it.skip('check a bunch of random inputs against JS implementation', async () => {
+  it.skip("check a bunch of random inputs against JS implementation", async () => {
     // generates random inputs
     const tests = Array(1_000)
       .fill(null)

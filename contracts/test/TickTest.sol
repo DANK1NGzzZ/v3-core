@@ -2,7 +2,7 @@
 pragma solidity =0.7.6;
 pragma abicoder v2;
 
-import '../libraries/Tick.sol';
+import "../libraries/Tick.sol";
 
 contract TickTest {
     using Tick for mapping(int24 => Tick.Info);

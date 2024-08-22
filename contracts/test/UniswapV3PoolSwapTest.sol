@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity =0.7.6;
 
-import '../interfaces/IERC20Minimal.sol';
+import "../interfaces/IERC20Minimal.sol";
 
-import '../interfaces/callback/IUniswapV3SwapCallback.sol';
-import '../interfaces/IUniswapV3Pool.sol';
+import "../interfaces/callback/IUniswapV3SwapCallback.sol";
+import "../interfaces/IUniswapV3Pool.sol";
 
 contract UniswapV3PoolSwapTest is IUniswapV3SwapCallback {
     int256 private _amount0Delta;

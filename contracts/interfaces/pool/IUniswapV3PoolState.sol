@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity >=0.5.0;
+pragma solidity ^0.8.20;
 
 /// @title Pool state that can change
-/// @notice These methods compose the pool's state, and can change with any frequency including multiple times
+/// @notice These methods compose the pool"s state, and can change with any frequency including multiple times
 /// per transaction
 interface IUniswapV3PoolState {
     /// @notice The 0th storage slot in the pool stores many values, and is exposed as a single method to save gas
@@ -78,8 +78,8 @@ interface IUniswapV3PoolState {
     /// @notice Returns 256 packed tick initialized boolean values. See TickBitmap for more information
     function tickBitmap(int16 wordPosition) external view returns (uint256);
 
-    /// @notice Returns the information about a position by the position's key
-    /// @param key The position's key is a hash of a preimage composed by the owner, tickLower and tickUpper
+    /// @notice Returns the information about a position by the position"s key
+    /// @param key The position"s key is a hash of a preimage composed by the owner, tickLower and tickUpper
     /// @return _liquidity The amount of liquidity in the position,
     /// Returns feeGrowthInside0LastX128 fee growth of token0 inside the tick range as of the last mint/burn/poke,
     /// Returns feeGrowthInside1LastX128 fee growth of token1 inside the tick range as of the last mint/burn/poke,

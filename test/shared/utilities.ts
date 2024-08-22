@@ -1,9 +1,9 @@
-import bn from 'bignumber.js'
-import { BigNumber, BigNumberish, constants, Contract, ContractTransaction, utils, Wallet } from 'ethers'
-import { TestUniswapV3Callee } from '../../typechain/TestUniswapV3Callee'
-import { TestUniswapV3Router } from '../../typechain/TestUniswapV3Router'
-import { MockTimeUniswapV3Pool } from '../../typechain/MockTimeUniswapV3Pool'
-import { TestERC20 } from '../../typechain/TestERC20'
+import bn from "bignumber.js"
+import { BigNumber, BigNumberish, constants, Contract, ContractTransaction, utils, Wallet } from "ethers"
+import { TestUniswapV3Callee } from "../../typechain/TestUniswapV3Callee"
+import { TestUniswapV3Router } from "../../typechain/TestUniswapV3Router"
+import { MockTimeUniswapV3Pool } from "../../typechain/MockTimeUniswapV3Pool"
+import { TestERC20 } from "../../typechain/TestERC20"
 
 export const MaxUint128 = BigNumber.from(2).pow(128).sub(1)
 
@@ -15,8 +15,8 @@ export const getMaxLiquidityPerTick = (tickSpacing: number) =>
     .sub(1)
     .div((getMaxTick(tickSpacing) - getMinTick(tickSpacing)) / tickSpacing + 1)
 
-export const MIN_SQRT_RATIO = BigNumber.from('4295128739')
-export const MAX_SQRT_RATIO = BigNumber.from('1461446703485210103287273052203988822378723970342')
+export const MIN_SQRT_RATIO = BigNumber.from("4295128739")
+export const MAX_SQRT_RATIO = BigNumber.from("1461446703485210103287273052203988822378723970342")
 
 export enum FeeAmount {
   LOW = 500,
@@ -42,18 +42,18 @@ export function getCreate2Address(
 ): string {
   const [token0, token1] = tokenA.toLowerCase() < tokenB.toLowerCase() ? [tokenA, tokenB] : [tokenB, tokenA]
   const constructorArgumentsEncoded = utils.defaultAbiCoder.encode(
-    ['address', 'address', 'uint24'],
+    ["address", "address", "uint24"],
     [token0, token1, fee]
   )
   const create2Inputs = [
-    '0xff',
+    "0xff",
     factoryAddress,
     // salt
     utils.keccak256(constructorArgumentsEncoded),
     // init code. bytecode + constructor arguments
     utils.keccak256(bytecode),
   ]
-  const sanitizedInputs = `0x${create2Inputs.map((i) => i.slice(2)).join('')}`
+  const sanitizedInputs = `0x${create2Inputs.map((i) => i.slice(2)).join("")}`
   return utils.getAddress(`0x${utils.keccak256(sanitizedInputs).slice(-40)}`)
 }
 
@@ -72,7 +72,7 @@ export function encodePriceSqrt(reserve1: BigNumberish, reserve0: BigNumberish):
 }
 
 export function getPositionKey(address: string, lowerTick: number, upperTick: number): string {
-  return utils.keccak256(utils.solidityPack(['address', 'int24', 'int24'], [address, lowerTick, upperTick]))
+  return utils.keccak256(utils.solidityPack(["address", "int24", "int24"], [address, lowerTick, upperTick]))
 }
 
 export type SwapFunction = (
@@ -124,7 +124,7 @@ export function createPoolFunctions({
 
     await inputToken.approve(swapTarget.address, constants.MaxUint256)
 
-    const toAddress = typeof to === 'string' ? to : to.address
+    const toAddress = typeof to === "string" ? to : to.address
 
     return method(pool.address, targetPrice, toAddress)
   }
@@ -146,7 +146,7 @@ export function createPoolFunctions({
         ? swapTarget.swapExact1For0
         : swapTarget.swap1ForExact0
 
-    if (typeof sqrtPriceLimitX96 === 'undefined') {
+    if (typeof sqrtPriceLimitX96 === "undefined") {
       if (inputToken === token0) {
         sqrtPriceLimitX96 = MIN_SQRT_RATIO.add(1)
       } else {
@@ -155,7 +155,7 @@ export function createPoolFunctions({
     }
     await inputToken.approve(swapTarget.address, constants.MaxUint256)
 
-    const toAddress = typeof to === 'string' ? to : to.address
+    const toAddress = typeof to === "string" ? to : to.address
 
     return method(pool.address, exactInput ? amountIn : amountOut, toAddress, sqrtPriceLimitX96)
   }
@@ -192,21 +192,21 @@ export function createPoolFunctions({
 
   const flash: FlashFunction = async (amount0, amount1, to, pay0?: BigNumberish, pay1?: BigNumberish) => {
     const fee = await pool.fee()
-    if (typeof pay0 === 'undefined') {
+    if (typeof pay0 === "undefined") {
       pay0 = BigNumber.from(amount0)
         .mul(fee)
         .add(1e6 - 1)
         .div(1e6)
         .add(amount0)
     }
-    if (typeof pay1 === 'undefined') {
+    if (typeof pay1 === "undefined") {
       pay1 = BigNumber.from(amount1)
         .mul(fee)
         .add(1e6 - 1)
         .div(1e6)
         .add(amount1)
     }
-    return swapTarget.flash(pool.address, typeof to === 'string' ? to : to.address, amount0, amount1, pay0, pay1)
+    return swapTarget.flash(pool.address, typeof to === "string" ? to : to.address, amount0, amount1, pay0, pay1)
   }
 
   return {
@@ -240,14 +240,14 @@ export function createMultiPoolFunctions({
   async function swapForExact0Multi(amountOut: BigNumberish, to: Wallet | string): Promise<ContractTransaction> {
     const method = swapTarget.swapForExact0Multi
     await inputToken.approve(swapTarget.address, constants.MaxUint256)
-    const toAddress = typeof to === 'string' ? to : to.address
+    const toAddress = typeof to === "string" ? to : to.address
     return method(toAddress, poolInput.address, poolOutput.address, amountOut)
   }
 
   async function swapForExact1Multi(amountOut: BigNumberish, to: Wallet | string): Promise<ContractTransaction> {
     const method = swapTarget.swapForExact1Multi
     await inputToken.approve(swapTarget.address, constants.MaxUint256)
-    const toAddress = typeof to === 'string' ? to : to.address
+    const toAddress = typeof to === "string" ? to : to.address
     return method(toAddress, poolInput.address, poolOutput.address, amountOut)
   }
 

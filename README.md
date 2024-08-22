@@ -26,7 +26,7 @@ For example:
 import {
   abi as FACTORY_ABI,
   bytecode as FACTORY_BYTECODE,
-} from '@uniswap/v3-core/artifacts/contracts/UniswapV3Factory.sol/UniswapV3Factory.json'
+} from "@uniswap/v3-core/artifacts/contracts/UniswapV3Factory.sol/UniswapV3Factory.json"
 
 // deploy the bytecode
 ```
@@ -41,7 +41,7 @@ The Uniswap v3 interfaces are available for import into solidity smart contracts
 via the npm artifact `@uniswap/v3-core`, e.g.:
 
 ```solidity
-import '@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol';
+import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 
 contract MyContract {
   IUniswapV3Pool pool;

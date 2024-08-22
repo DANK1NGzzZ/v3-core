@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
-pragma solidity >=0.5.0;
+pragma solidity ^0.8.20;
 
 /// @title Events emitted by a pool
 /// @notice Contains all events emitted by the pool
@@ -44,7 +44,7 @@ interface IUniswapV3PoolEvents {
         uint128 amount1
     );
 
-    /// @notice Emitted when a position's liquidity is removed
+    /// @notice Emitted when a position"s liquidity is removed
     /// @dev Does not withdraw any fees earned by the liquidity position, which must be withdrawn via #collect
     /// @param owner The owner of the position for which liquidity is removed
     /// @param tickLower The lower tick of the position

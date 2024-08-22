@@ -1,13 +1,13 @@
-import Decimal from 'decimal.js'
-import { BigNumber, BigNumberish, Wallet } from 'ethers'
-import { ethers, waffle } from 'hardhat'
-import { MockTimeUniswapV3Pool } from '../typechain/MockTimeUniswapV3Pool'
-import { TickMathTest } from '../typechain/TickMathTest'
-import { UniswapV3PoolSwapTest } from '../typechain/UniswapV3PoolSwapTest'
-import { expect } from './shared/expect'
+import Decimal from "decimal.js"
+import { BigNumber, BigNumberish, Wallet } from "ethers"
+import { ethers, waffle } from "hardhat"
+import { MockTimeUniswapV3Pool } from "../typechain/MockTimeUniswapV3Pool"
+import { TickMathTest } from "../typechain/TickMathTest"
+import { UniswapV3PoolSwapTest } from "../typechain/UniswapV3PoolSwapTest"
+import { expect } from "./shared/expect"
 
-import { poolFixture } from './shared/fixtures'
-import { formatPrice, formatTokenAmount } from './shared/format'
+import { poolFixture } from "./shared/fixtures"
+import { formatPrice, formatTokenAmount } from "./shared/format"
 
 import {
   createPoolFunctions,
@@ -23,7 +23,7 @@ import {
   MintFunction,
   SwapFunction,
   TICK_SPACINGS,
-} from './shared/utilities'
+} from "./shared/utilities"
 
 const {
   constants: { MaxUint256 },
@@ -48,12 +48,12 @@ function applySqrtRatioBipsHundredthsDelta(sqrtRatio: BigNumber, bipsHundredths:
   )
 }
 
-describe('UniswapV3Pool arbitrage tests', () => {
+describe("UniswapV3Pool arbitrage tests", () => {
   let wallet: Wallet, arbitrageur: Wallet
 
   let loadFixture: ReturnType<typeof createFixtureLoader>
 
-  before('create fixture loader', async () => {
+  before("create fixture loader", async () => {
     ;[wallet, arbitrageur] = await (ethers as any).getSigners()
     loadFixture = createFixtureLoader([wallet, arbitrageur])
   })
@@ -95,10 +95,10 @@ describe('UniswapV3Pool arbitrage tests', () => {
               pool,
             })
 
-            const testerFactory = await ethers.getContractFactory('UniswapV3PoolSwapTest')
+            const testerFactory = await ethers.getContractFactory("UniswapV3PoolSwapTest")
             const tester = (await testerFactory.deploy()) as UniswapV3PoolSwapTest
 
-            const tickMathFactory = await ethers.getContractFactory('TickMathTest')
+            const tickMathFactory = await ethers.getContractFactory("TickMathTest")
             const tickMath = (await tickMathFactory.deploy()) as TickMathTest
 
             await fix.token0.approve(tester.address, MaxUint256)
@@ -123,7 +123,7 @@ describe('UniswapV3Pool arbitrage tests', () => {
           let tester: UniswapV3PoolSwapTest
           let tickMath: TickMathTest
 
-          beforeEach('load the fixture', async () => {
+          beforeEach("load the fixture", async () => {
             ;({
               swapExact0For1,
               pool,
@@ -162,13 +162,13 @@ describe('UniswapV3Pool arbitrage tests', () => {
 
           for (const { zeroForOne, assumedTruePriceAfterSwap, inputAmount, description } of [
             {
-              description: 'exact input of 10e18 token0 with starting price of 1.0 and true price of 0.98',
+              description: "exact input of 10e18 token0 with starting price of 1.0 and true price of 0.98",
               zeroForOne: true,
               inputAmount: expandTo18Decimals(10),
               assumedTruePriceAfterSwap: encodePriceSqrt(98, 100),
             },
             {
-              description: 'exact input of 10e18 token0 with starting price of 1.0 and true price of 1.01',
+              description: "exact input of 10e18 token0 with starting price of 1.0 and true price of 1.01",
               zeroForOne: true,
               inputAmount: expandTo18Decimals(10),
               assumedTruePriceAfterSwap: encodePriceSqrt(101, 100),
@@ -183,7 +183,7 @@ describe('UniswapV3Pool arbitrage tests', () => {
                   .add(arbBalance1)
               }
 
-              it('not sandwiched', async () => {
+              it("not sandwiched", async () => {
                 const { executionPrice, amount1Delta, amount0Delta } = await simulateSwap(zeroForOne, inputAmount)
                 zeroForOne
                   ? await swapExact0For1(inputAmount, wallet.address)
@@ -197,7 +197,7 @@ describe('UniswapV3Pool arbitrage tests', () => {
                 }).to.matchSnapshot()
               })
 
-              it('sandwiched with swap to execution price then mint max liquidity/target/burn max liquidity', async () => {
+              it("sandwiched with swap to execution price then mint max liquidity/target/burn max liquidity", async () => {
                 const { executionPrice } = await simulateSwap(zeroForOne, inputAmount)
 
                 const firstTickAboveMarginalPrice = zeroForOne
@@ -243,19 +243,19 @@ describe('UniswapV3Pool arbitrage tests', () => {
                 ).wait()
                 // sub the mint costs
                 const { amount0: amount0Mint, amount1: amount1Mint } = pool.interface.decodeEventLog(
-                  pool.interface.events['Mint(address,address,int24,int24,uint128,uint256,uint256)'],
+                  pool.interface.events["Mint(address,address,int24,int24,uint128,uint256,uint256)"],
                   mintReceipt.events?.[2].data!
                 )
                 arbBalance0 = arbBalance0.sub(amount0Mint)
                 arbBalance1 = arbBalance1.sub(amount1Mint)
 
-                // execute the user's swap
+                // execute the user"s swap
                 const { executionPrice: executionPriceAfterFrontrun } = await simulateSwap(zeroForOne, inputAmount)
                 zeroForOne
                   ? await swapExact0For1(inputAmount, wallet.address)
                   : await swapExact1For0(inputAmount, wallet.address)
 
-                // burn the arb's liquidity
+                // burn the arb"s liquidity
                 const { amount0: amount0Burn, amount1: amount1Burn } = await pool.callStatic.burn(
                   tickLower,
                   tickUpper,
@@ -327,7 +327,7 @@ describe('UniswapV3Pool arbitrage tests', () => {
                 }).to.matchSnapshot()
               })
 
-              it('backrun to true price after swap only', async () => {
+              it("backrun to true price after swap only", async () => {
                 let arbBalance0 = BigNumber.from(0)
                 let arbBalance1 = BigNumber.from(0)
 

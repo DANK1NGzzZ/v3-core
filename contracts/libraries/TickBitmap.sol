@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: BUSL-1.1
-pragma solidity >=0.5.0;
+pragma solidity ^0.8.20;
 
-import './BitMath.sol';
+
+import "./BitMath.sol";
 
 /// @title Packed tick initialized state library
 /// @notice Stores a packed mapping of tick index to its initialized state
@@ -61,7 +62,7 @@ library TickBitmap {
                 ? (compressed - int24(bitPos - BitMath.mostSignificantBit(masked))) * tickSpacing
                 : (compressed - int24(bitPos)) * tickSpacing;
         } else {
-            // start from the word of the next tick, since the current tick state doesn't matter
+            // start from the word of the next tick, since the current tick state doesn"t matter
             (int16 wordPos, uint8 bitPos) = position(compressed + 1);
             // all the 1s at or to the left of the bitPos
             uint256 mask = ~((1 << bitPos) - 1);

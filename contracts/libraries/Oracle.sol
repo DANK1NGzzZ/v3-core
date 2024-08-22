@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1
-pragma solidity >=0.5.0 <0.8.0;
+pragma solidity ^0.8.20;
 
 /// @title Oracle
 /// @notice Provides price and liquidity data useful for a wide variety of system designs
@@ -86,7 +86,7 @@ library Oracle {
     ) internal returns (uint16 indexUpdated, uint16 cardinalityUpdated) {
         Observation memory last = self[index];
 
-        // early return if we've already written an observation this block
+        // early return if we"ve already written an observation this block
         if (last.blockTimestamp == blockTimestamp) return (index, cardinality);
 
         // if the conditions are right, we can bump the cardinality
@@ -110,8 +110,8 @@ library Oracle {
         uint16 current,
         uint16 next
     ) internal returns (uint16) {
-        require(current > 0, 'I');
-        // no-op if the passed next value isn't greater than the current next value
+        require(current > 0, "I");
+        // no-op if the passed next value isn"t greater than the current next value
         if (next <= current) return current;
         // store in each slot to prevent fresh SSTOREs in swaps
         // this data will not be used because the initialized boolean is still false
@@ -130,7 +130,7 @@ library Oracle {
         uint32 a,
         uint32 b
     ) private pure returns (bool) {
-        // if there hasn't been overflow, no need to adjust
+        // if there hasn"t been overflow, no need to adjust
         if (a <= time && b <= time) return a <= b;
 
         uint256 aAdjusted = a > time ? a : a + 2**32;
@@ -165,7 +165,7 @@ library Oracle {
 
             beforeOrAt = self[i % cardinality];
 
-            // we've landed on an uninitialized tick, keep searching higher (more recently)
+            // we"ve landed on an uninitialized tick, keep searching higher (more recently)
             if (!beforeOrAt.initialized) {
                 l = i + 1;
                 continue;
@@ -175,7 +175,7 @@ library Oracle {
 
             bool targetAtOrAfter = lte(time, beforeOrAt.blockTimestamp, target);
 
-            // check if we've found the answer!
+            // check if we"ve found the answer!
             if (targetAtOrAfter && lte(time, target, atOrAfter.blockTimestamp)) break;
 
             if (!targetAtOrAfter) r = i - 1;
@@ -210,7 +210,7 @@ library Oracle {
         // if the target is chronologically at or after the newest observation, we can early return
         if (lte(time, beforeOrAt.blockTimestamp, target)) {
             if (beforeOrAt.blockTimestamp == target) {
-                // if newest observation equals target, we're in the same block, so we can ignore atOrAfter
+                // if newest observation equals target, we"re in the same block, so we can ignore atOrAfter
                 return (beforeOrAt, atOrAfter);
             } else {
                 // otherwise, we need to transform
@@ -223,14 +223,14 @@ library Oracle {
         if (!beforeOrAt.initialized) beforeOrAt = self[0];
 
         // ensure that the target is chronologically at or after the oldest observation
-        require(lte(time, beforeOrAt.blockTimestamp, target), 'OLD');
+        require(lte(time, beforeOrAt.blockTimestamp, target), "OLD");
 
-        // if we've reached this point, we have to binary search
+        // if we"ve reached this point, we have to binary search
         return binarySearch(self, time, target, index, cardinality);
     }
 
     /// @dev Reverts if an observation at or before the desired observation timestamp does not exist.
-    /// 0 may be passed as `secondsAgo' to return the current cumulative values.
+    /// 0 may be passed as `secondsAgo" to return the current cumulative values.
     /// If called with a timestamp falling between two observations, returns the counterfactual accumulator values
     /// at exactly the timestamp between the two observations.
     /// @param self The stored oracle array
@@ -263,13 +263,13 @@ library Oracle {
             getSurroundingObservations(self, time, target, tick, index, liquidity, cardinality);
 
         if (target == beforeOrAt.blockTimestamp) {
-            // we're at the left boundary
+            // we"re at the left boundary
             return (beforeOrAt.tickCumulative, beforeOrAt.secondsPerLiquidityCumulativeX128);
         } else if (target == atOrAfter.blockTimestamp) {
-            // we're at the right boundary
+            // we"re at the right boundary
             return (atOrAfter.tickCumulative, atOrAfter.secondsPerLiquidityCumulativeX128);
         } else {
-            // we're in the middle
+            // we"re in the middle
             uint32 observationTimeDelta = atOrAfter.blockTimestamp - beforeOrAt.blockTimestamp;
             uint32 targetDelta = target - beforeOrAt.blockTimestamp;
             return (
@@ -306,7 +306,7 @@ library Oracle {
         uint128 liquidity,
         uint16 cardinality
     ) internal view returns (int56[] memory tickCumulatives, uint160[] memory secondsPerLiquidityCumulativeX128s) {
-        require(cardinality > 0, 'I');
+        require(cardinality > 0, "I");
 
         tickCumulatives = new int56[](secondsAgos.length);
         secondsPerLiquidityCumulativeX128s = new uint160[](secondsAgos.length);

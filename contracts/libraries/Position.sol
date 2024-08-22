@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: BUSL-1.1
-pragma solidity >=0.5.0 <0.8.0;
+pragma solidity ^0.8.20;
 
-import './FullMath.sol';
-import './FixedPoint128.sol';
-import './LiquidityMath.sol';
+import "./FullMath.sol";
+import "./FixedPoint128.sol";
+import "./LiquidityMath.sol";
 
 /// @title Position
-/// @notice Positions represent an owner address' liquidity between a lower and upper tick boundary
+/// @notice Positions represent an owner address" liquidity between a lower and upper tick boundary
 /// @dev Positions store additional state for tracking fees owed to the position
 library Position {
-    // info stored for each user's position
+    // info stored for each user"s position
     struct Info {
         // the amount of liquidity owned by this position
         uint128 liquidity;
@@ -26,7 +26,7 @@ library Position {
     /// @param owner The address of the position owner
     /// @param tickLower The lower tick boundary of the position
     /// @param tickUpper The upper tick boundary of the position
-    /// @return position The position info struct of the given owners' position
+    /// @return position The position info struct of the given owners" position
     function get(
         mapping(bytes32 => Info) storage self,
         address owner,
@@ -36,11 +36,11 @@ library Position {
         position = self[keccak256(abi.encodePacked(owner, tickLower, tickUpper))];
     }
 
-    /// @notice Credits accumulated fees to a user's position
+    /// @notice Credits accumulated fees to a user"s position
     /// @param self The individual position to update
     /// @param liquidityDelta The change in pool liquidity as a result of the position update
-    /// @param feeGrowthInside0X128 The all-time fee growth in token0, per unit of liquidity, inside the position's tick boundaries
-    /// @param feeGrowthInside1X128 The all-time fee growth in token1, per unit of liquidity, inside the position's tick boundaries
+    /// @param feeGrowthInside0X128 The all-time fee growth in token0, per unit of liquidity, inside the position"s tick boundaries
+    /// @param feeGrowthInside1X128 The all-time fee growth in token1, per unit of liquidity, inside the position"s tick boundaries
     function update(
         Info storage self,
         int128 liquidityDelta,
@@ -51,7 +51,7 @@ library Position {
 
         uint128 liquidityNext;
         if (liquidityDelta == 0) {
-            require(_self.liquidity > 0, 'NP'); // disallow pokes for 0 liquidity positions
+            require(_self.liquidity > 0, "NP"); // disallow pokes for 0 liquidity positions
             liquidityNext = _self.liquidity;
         } else {
             liquidityNext = LiquidityMath.addDelta(_self.liquidity, liquidityDelta);
